@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: tipsoi-mcp
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: TIPSOI_TRANSPORT
+        value: http
+      - key: TIPSOI_EMAIL
+        sync: false   # set this in Render dashboard
+      - key: TIPSOI_PASSWORD
+        sync: false   # set this in Render dashboard
+      - key: TIPSOI_OFFICE_ID
+        sync: false   # set this in Render dashboard
+      - key: TIPSOI_COMPANY_ID
+        sync: false   # set this in Render dashboard

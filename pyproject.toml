@@ -1,0 +1,19 @@
+[project]
+name = "tipsoi-mcp"
+version = "0.1.0"
+description = "Phase 1 (read-only) MCP server for the Tipsoi HRM API"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.2.0",
+    "httpx>=0.27",
+]
+
+[project.scripts]
+tipsoi-mcp = "tipsoi_mcp.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["tipsoi_mcp"]
