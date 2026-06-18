@@ -33,7 +33,8 @@ from mcp.types import ToolAnnotations
 from .client import TipsoiClient, TipsoiAPIError, TipsoiAuthError
 from .dates import day_start_ms, day_end_ms, month_range_ms
 
-mcp = FastMCP("tipsoi")
+_port = int(os.environ.get("PORT", 8000))
+mcp = FastMCP("tipsoi", host="0.0.0.0", port=_port)
 _client = TipsoiClient()
 
 _ro = ToolAnnotations(readOnlyHint=True)
@@ -437,8 +438,7 @@ async def list_notifications(page_number: int = 0, per_page: int = 20) -> Any:
 def main() -> None:
     transport = os.environ.get("TIPSOI_TRANSPORT", "stdio").lower()
     if transport in ("http", "streamable-http", "streamable_http"):
-        port = int(os.environ.get("PORT", 8000))
-        mcp.run(transport="streamable-http", host="0.0.0.0", port=port)
+        mcp.run(transport="streamable-http")
     else:
         mcp.run(transport="stdio")
 
