@@ -1,7 +1,7 @@
 [project]
 name = "tipsoi-mcp"
 version = "0.3.0"
-description = "Phase 1 (read-only) MCP server for the Tipsoi HRM API"
+description = "MCP server for the Tipsoi HRM API (read reports + leave write tools, per-user OAuth)"
 requires-python = ">=3.10"
 dependencies = [
     "mcp>=1.2.0",

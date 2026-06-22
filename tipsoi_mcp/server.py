@@ -21,7 +21,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 
 from .client import TipsoiClient, TipsoiAPIError, TipsoiAuthError
-from .dates import day_start_ms, day_end_ms, month_range_ms
+from .dates import day_start_ms, day_end_ms, month_range_ms, year_range_ms
 from .token_store import token_store, UserSession
 
 _port = int(os.environ.get("PORT", 8000))
@@ -100,6 +100,17 @@ async def _safe_get(path: str, params: dict[str, Any] | None = None) -> Any:
 async def _safe_post(path: str, body: dict[str, Any] | None = None) -> Any:
     try:
         return await _client().post(path, body)
+    except TipsoiAuthError as e:
+        return {"error": "authentication_failed", "detail": str(e)}
+    except TipsoiAPIError as e:
+        return {"error": "api_error", "status": e.status, "detail": e.detail}
+    except Exception as e:
+        return {"error": "unexpected", "detail": repr(e)}
+
+
+async def _safe_post_form(path: str, post_body: dict[str, Any]) -> Any:
+    try:
+        return await _client().post_form(path, post_body)
     except TipsoiAuthError as e:
         return {"error": "authentication_failed", "detail": str(e)}
     except TipsoiAPIError as e:
@@ -464,31 +475,48 @@ async def list_notifications(page_number: int = 0, per_page: int = 20) -> Any:
 @mcp.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False))
 async def apply_leave(
     employee_id: str,
-    leave_category_id: str,
+    leave_category_id: int,
     from_date: str,
     to_date: str,
     reason: str = "",
     is_half_day: bool = False,
+    force_approval: bool = True,
+    fiscal_year_start_date: str | None = None,
+    fiscal_year_end_date: str | None = None,
 ) -> Any:
     """Apply for leave on behalf of an employee.
 
+    Sends a multipart/form-data request with a `postBody` JSON field, as the
+    Tipsoi apply-leave endpoint requires.
+
     Args:
         employee_id: Tipsoi employee ID.
-        leave_category_id: ID of the leave category (e.g. annual leave, sick leave).
-                           Use applied_leave_list or list_employees to discover valid IDs.
+        leave_category_id: Numeric ID of the leave category (e.g. annual, sick).
+                           Discover valid IDs via the leave-category config.
         from_date: Leave start date, YYYY-MM-DD.
         to_date: Leave end date, YYYY-MM-DD (inclusive).
         reason: Optional reason / note for the leave request.
         is_half_day: True for a half-day leave request.
+        force_approval: Whether to force-approve on apply (default True, per API example).
+        fiscal_year_start_date: YYYY-MM-DD. Defaults to Jan 1 of from_date's year.
+        fiscal_year_end_date: YYYY-MM-DD. Defaults to Dec 31 of from_date's year.
     """
-    body = {
+    fy_start, fy_end = year_range_ms(from_date)
+    if fiscal_year_start_date:
+        fy_start = day_start_ms(fiscal_year_start_date)
+    if fiscal_year_end_date:
+        fy_end = day_end_ms(fiscal_year_end_date)
+    post_body = {
         "leaveCategoryId": leave_category_id,
-        "fromDate": day_start_ms(from_date),
-        "toDate": day_end_ms(to_date),
         "reason": reason,
+        "forceApproval": force_approval,
+        "fiscalYearStartDate": fy_start,
+        "fiscalYearEndDate": fy_end,
+        "startDate": day_start_ms(from_date),
+        "endDate": day_end_ms(to_date),
         "isHalfDay": is_half_day,
     }
-    return await _safe_post(f"leave-management/apply/employee/{employee_id}", body)
+    return await _safe_post_form(f"leave-management/apply/employee/{employee_id}", post_body)
 
 
 @mcp.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False))
@@ -528,24 +556,36 @@ async def reject_leave(
 @mcp.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False))
 async def adjust_leave(
     leave_log_id: str,
+    leave_category_id: int,
     from_date: str,
     to_date: str,
     reason: str = "",
+    is_half_day: bool = False,
+    employee_identifier: str = "",
 ) -> Any:
-    """Adjust the dates of an existing leave application.
+    """Adjust an existing leave application (dates / category).
+
+    Sends a multipart/form-data request with a `postBody` JSON field, as the
+    Tipsoi adjust-leave endpoint requires.
 
     Args:
         leave_log_id: The leave log ID to adjust.
+        leave_category_id: Numeric ID of the leave category for the adjusted leave.
         from_date: New start date, YYYY-MM-DD.
         to_date: New end date, YYYY-MM-DD.
         reason: Reason for the adjustment.
+        is_half_day: True for a half-day leave.
+        employee_identifier: Optional employee identifier (usually left blank).
     """
-    body = {
-        "fromDate": day_start_ms(from_date),
-        "toDate": day_end_ms(to_date),
+    post_body = {
+        "leaveCategoryId": leave_category_id,
+        "startDate": str(day_start_ms(from_date)),
+        "endDate": str(day_end_ms(to_date)),
         "reason": reason,
+        "employeeIdentifier": employee_identifier,
+        "isHalfDay": is_half_day,
     }
-    return await _safe_post(f"leave-management/adjust/{leave_log_id}", body)
+    return await _safe_post_form(f"leave-management/adjust/{leave_log_id}", post_body)
 
 
 # ---------------------------------------------------------------------------

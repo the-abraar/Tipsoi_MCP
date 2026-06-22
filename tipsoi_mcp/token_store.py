@@ -61,6 +61,25 @@ class TokenStore:
     def client_exists(self, client_id: str) -> bool:
         return client_id in self._clients
 
+    def get_client(self, client_id: str) -> Optional[dict]:
+        return self._clients.get(client_id)
+
+    def client_allows_redirect(self, client_id: str, redirect_uri: str) -> bool:
+        """True if the redirect_uri is registered for this client.
+
+        Unknown clients (no registration on record) are allowed through to
+        preserve compatibility with clients that skip dynamic registration;
+        registered clients are held to their declared redirect_uris to prevent
+        open-redirect / authorization-code phishing.
+        """
+        meta = self._clients.get(client_id)
+        if not meta:
+            return True
+        registered = meta.get("redirect_uris")
+        if not registered:
+            return True
+        return redirect_uri in registered
+
     # ---- auth codes ---------------------------------------------------------
 
     def create_code(

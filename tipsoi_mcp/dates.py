@@ -36,6 +36,19 @@ def day_end_ms(date_str: str) -> int:
     return int(d.timestamp() * 1000)
 
 
+def year_range_ms(date_str: str) -> tuple[int, int]:
+    """YYYY-MM-DD -> (Jan-1 00:00:00.000, Dec-31 23:59:59.999) of that year, local time.
+
+    Used as a sensible default fiscal-year window for leave application when the
+    caller doesn't supply explicit fiscal-year boundaries. Many Tipsoi orgs use a
+    calendar fiscal year; override via explicit args if yours differs.
+    """
+    year = datetime.strptime(date_str, "%Y-%m-%d").year
+    start = datetime(year, 1, 1, 0, 0, 0, tzinfo=_tz())
+    end = datetime(year + 1, 1, 1, tzinfo=_tz()) - timedelta(milliseconds=1)
+    return int(start.timestamp() * 1000), int(end.timestamp() * 1000)
+
+
 def month_range_ms(year: int, month: int) -> tuple[int, int]:
     """(year, month) -> (start_ms, end_ms) covering the whole month, local time."""
     start = datetime(year, month, 1, 0, 0, 0, tzinfo=_tz())

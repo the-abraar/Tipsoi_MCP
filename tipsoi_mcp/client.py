@@ -12,6 +12,7 @@ This module is intentionally transport-agnostic: it knows nothing about MCP.
 from __future__ import annotations
 
 import os
+import json
 import time
 import asyncio
 from dataclasses import dataclass, field
@@ -198,9 +199,56 @@ class TipsoiClient:
                 return resp.json()
             return resp.text
 
+    async def post_form(self, path: str, post_body: dict[str, Any]) -> Any:
+        """
+        Authenticated multipart/form-data POST.
+
+        Several Tipsoi leave endpoints (apply / adjust) expect a `multipart/form-data`
+        body with a JSON string in a `postBody` field and an optional `file` part —
+        NOT an application/json body. This sends exactly that shape.
+        Transparently refreshes / re-signs on 401 once.
+        """
+        url = f"{self.base_url}/{path.lstrip('/')}"
+        async with httpx.AsyncClient(timeout=self._timeout) as http:
+            sess = await self._ensure_session(http)
+            resp = await self._do_post_form(http, url, post_body, sess.access_token)
+
+            if resp.status_code == 401:
+                async with self._lock:
+                    new_sess = await self._refresh(http)
+                    if new_sess is None:
+                        new_sess = await self._sign_in(http)
+                    self._session = new_sess
+                resp = await self._do_post_form(http, url, post_body, self._session.access_token)
+
+            if resp.status_code >= 400:
+                raise TipsoiAPIError(resp.status_code, url, resp.text[:500])
+
+            if not resp.content:
+                return {"success": True}
+            ctype = resp.headers.get("content-type", "")
+            if "application/json" in ctype:
+                return resp.json()
+            return resp.text
+
+    @staticmethod
+    async def _do_post_form(http, url, post_body, token):
+        # `data` carries the JSON string in a `postBody` form field; an empty
+        # `file` part forces httpx to encode as multipart/form-data, matching
+        # the API's expected request shape.
+        return await http.post(
+            url,
+            data={"postBody": json.dumps(post_body)},
+            files={"file": ("", b"", "application/octet-stream")},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
     @staticmethod
     async def _do_get(http, url, params, token):
-        return await http.get(url, params=params, headers={"Authorization": f"Bearer {token}"})
+        # Pass None (not {}) when there are no params: httpx STRIPS any query
+        # string already present in the URL when handed an empty dict, which
+        # breaks endpoints (e.g. leave-history) that embed the query in the path.
+        return await http.get(url, params=(params or None), headers={"Authorization": f"Bearer {token}"})
 
     @staticmethod
     async def _do_post(http, url, body, token):

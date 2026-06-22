@@ -257,6 +257,13 @@ async def authorize_get(request: Request) -> HTMLResponse:
 
     if not redirect_uri:
         return HTMLResponse("Missing redirect_uri", status_code=400)
+    if not token_store.client_allows_redirect(client_id, redirect_uri):
+        return HTMLResponse("Invalid redirect_uri for this client", status_code=400)
+    # OAuth 2.1 / MCP require PKCE on the authorization code flow.
+    if not code_challenge:
+        return HTMLResponse("Missing code_challenge (PKCE required)", status_code=400)
+    if code_challenge_method != "S256":
+        return HTMLResponse("Unsupported code_challenge_method (S256 required)", status_code=400)
 
     return _login_page(
         redirect_uri=redirect_uri,
@@ -280,6 +287,10 @@ async def authorize_post(request: Request) -> Response:
 
     if not redirect_uri:
         return HTMLResponse("Missing redirect_uri", status_code=400)
+    if not token_store.client_allows_redirect(client_id, redirect_uri):
+        return HTMLResponse("Invalid redirect_uri for this client", status_code=400)
+    if not code_challenge:
+        return HTMLResponse("Missing code_challenge (PKCE required)", status_code=400)
 
     def show_error(msg: str) -> HTMLResponse:
         return _login_page(
