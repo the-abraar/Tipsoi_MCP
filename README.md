@@ -1,114 +1,108 @@
-# Tipsoi MCP — Phase 1 (Read-Only)
+# Tipsoi MCP Server
 
-An MCP server that lets Claude read from the Tipsoi HRM API: employees,
-attendance, leave, overtime, notifications, and org setup. **Phase 1 is
-strictly read-only** — the server registers only GET endpoints, so the
-assistant physically cannot create, edit, approve, or delete anything.
+An MCP server that gives Claude access to the Tipsoi HRM API — employees,
+attendance, leave, overtime, and org setup. Employees and managers can ask
+Claude natural-language questions about HRM data and take common actions
+without opening the Tipsoi dashboard.
+
+**Current version:** 0.3.0  
+**Deployed at:** `https://tipsoi-mcp.onrender.com/mcp`
 
 ---
 
-## What's exposed (15 tools)
+## What's been built
 
-| Tool | Reads |
+### Phase 1 — 15 read-only tools ✅
+
+Every tool carries `readOnlyHint: true` (required for Connectors Directory
+submission). The server is physically incapable of mutating data.
+
+| Tool | What it reads |
 |---|---|
 | `list_employees` | Employee directory |
-| `get_employee` | One employee's profile |
+| `get_employee` | Single employee profile |
 | `monthly_attendance` | Monthly attendance report |
 | `daily_attendance_summary` | One day's attendance |
 | `daily_absent_report` | Absentees for a date |
 | `late_report` | Late / leave / absent over a range |
-| `mobile_punch_report` | App/selfie punches over a range |
+| `mobile_punch_report` | App / selfie punches over a range |
 | `leave_balance_report` | Leave balances |
 | `applied_leave_list` | Leave applications (view only) |
 | `monthly_overtime_report` | Overtime report |
-| `list_workplaces` | Offices/locations |
+| `list_workplaces` | Offices / locations |
 | `list_departments` | Departments |
 | `list_designations` | Job titles |
 | `list_holidays` | Holidays |
 | `list_notifications` | Recent notifications |
 
-Write endpoints from the API collection (create/update/delete employee, apply/
-approve leave, change OT status, etc.) are **deliberately not registered**.
-They belong to Phase 2+, behind per-user auth, confirmation, and audit logging.
+### Phase 2 — Per-user OAuth 2.1 ✅
+
+Clients no longer share a service account. When a user adds the connector in
+Claude, they are redirected to a hosted login page and sign in with their own
+Tipsoi credentials. Their session is stored server-side and all tool calls are
+made with their personal token — so each user only sees data their Tipsoi
+account is permitted to access.
+
+**What was built:**
+- `token_store.py` — in-memory store for auth codes and access tokens (with PKCE support)
+- `oauth_routes.py` — full OAuth 2.1 Authorization Code + PKCE endpoints:
+  - `GET /.well-known/oauth-authorization-server` — server metadata (RFC 8414)
+  - `GET /.well-known/oauth-protected-resource` — resource metadata (RFC 9728)
+  - `POST /register` — dynamic client registration (RFC 7591)
+  - `GET /authorize` — login page
+  - `POST /authorize` — form submit: authenticates against Tipsoi, issues code, redirects
+  - `POST /token` — code → access token exchange
+- `_SessionMiddleware` — pure ASGI middleware that reads the Bearer token from
+  each MCP request, looks up the user's Tipsoi session, and injects it via a
+  `ContextVar`. Tools call `_client()` which returns the per-user
+  `TipsoiClient` automatically.
+- After OAuth sign-in, the server fetches the employee's profile to discover
+  their `officeId` automatically — users don't need to configure anything.
+
+### Phase 3 — Write tools ✅
+
+Four write tools added. These use the per-user session from Phase 2 so actions
+are attributed to the correct employee, not a service account.
+
+| Tool | What it does | Annotation |
+|---|---|---|
+| `apply_leave` | Submit a leave application for an employee | `readOnlyHint: false` |
+| `approve_leave` | Approve a pending leave application | `readOnlyHint: false` |
+| `reject_leave` | Reject or cancel a leave application | `destructiveHint: true` |
+| `adjust_leave` | Change the dates on an existing leave application | `readOnlyHint: false` |
+
+### Deployment ✅
+
+- **Dockerfile** — Python 3.12, installs the package and its dependencies
+- **render.yaml** — free-tier Render web service, Docker runtime
+- Hosted at `https://tipsoi-mcp.onrender.com`
 
 ---
 
-## 1. Install
+## Quick start
 
-Requires Python 3.10+.
+### Local (Claude Desktop — single account)
 
 ```bash
 cd tipsoi-mcp
-python -m venv .venv && source .venv/bin/activate    # optional but recommended
+python -m venv .venv && source .venv/bin/activate
 pip install -e .
+cp .env.example .env   # fill in credentials
 ```
 
-## 2. Configure credentials
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env`:
-
-```
-TIPSOI_EMAIL=service-account@yourcompany.com
-TIPSOI_PASSWORD=...
-TIPSOI_OFFICE_ID=4397        # optional default; discover via list_workplaces
-TIPSOI_COMPANY_ID=4146       # optional default
-```
-
-> **Use a dedicated read-scoped service account.** Whatever this account can
-> see in Tipsoi is the ceiling of what the assistant can read. Even though the
-> server exposes no write tools, scope the account to read-only roles as a
-> second line of defense.
-
-The server reads env vars directly. To load `.env`, either export the vars in
-your shell or use a tool like `direnv` / `dotenv`.
-
-## 3. Test locally (stdio)
-
-```bash
-set -a; source .env; set +a
-python -m tipsoi_mcp.server
-```
-
-It will start on stdio and wait for an MCP client. Use the MCP Inspector for a
-quick manual check:
-
-```bash
-npx @modelcontextprotocol/inspector python -m tipsoi_mcp.server
-```
-
-Call `list_workplaces` first — it confirms auth works and shows valid
-`office_id` values.
-
----
-
-## 4. Use it as a Claude connector
-
-You have two paths. **Local (stdio)** is the fastest for one machine; **remote
-(HTTP)** is what you want for a shared team connector.
-
-### Option A — Local, via Claude Desktop (stdio)
-
-Claude Desktop launches the server as a subprocess.
-
-1. Open Claude Desktop → **Settings → Developer → Edit Config**
-   (this opens `claude_desktop_config.json`).
-2. Add the server:
+Add to `~/.config/Claude/claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
     "tipsoi": {
-      "command": "python",
+      "command": "/absolute/path/to/.venv/bin/python3",
       "args": ["-m", "tipsoi_mcp.server"],
-      "cwd": "/absolute/path/to/tipsoi-mcp",
       "env": {
-        "TIPSOI_EMAIL": "service-account@yourcompany.com",
+        "PYTHONPATH": "/absolute/path/to/tipsoi-mcp",
+        "TIPSOI_EMAIL": "you@company.com",
         "TIPSOI_PASSWORD": "...",
-        "TIPSOI_OFFICE_ID": "4397",
+        "TIPSOI_OFFICE_ID": "279",
         "TIPSOI_COMPANY_ID": "4146"
       }
     }
@@ -116,65 +110,108 @@ Claude Desktop launches the server as a subprocess.
 }
 ```
 
-   Use the **full path** to your `python` (the venv one) if `python` isn't on
-   Claude Desktop's PATH — e.g. `/path/to/tipsoi-mcp/.venv/bin/python`.
+Restart Claude Desktop. Ask: *"Who was absent today?"*
 
-3. Restart Claude Desktop. You'll see a tools/connector icon; "tipsoi" and its
-   15 tools should appear. Ask: *"List our Tipsoi workplaces"* or *"Show the
-   daily attendance summary for 2026-02-18."*
+### Remote connector (per-user OAuth)
 
-### Option B — Remote, via Claude.ai / Claude Desktop Custom Connector (HTTP)
+Clients add the connector URL in Claude → **Settings → Connectors → Add
+custom connector**:
 
-For a connector your team adds by URL, run the server in streamable-HTTP mode
-behind HTTPS.
-
-1. Run it in HTTP mode:
-
-```bash
-set -a; source .env; set +a
-TIPSOI_TRANSPORT=http python -m tipsoi_mcp.server
+```
+https://tipsoi-mcp.onrender.com/mcp
 ```
 
-   FastMCP serves the streamable-HTTP endpoint at `/mcp` (default host/port
-   `127.0.0.1:8000`). Put it behind a reverse proxy (nginx/Caddy) or a tunnel
-   so it's reachable over **HTTPS** — remote MCP connectors require TLS.
-
-2. In Claude: **Settings → Connectors → Add custom connector**, then paste the
-   public URL, e.g. `https://tipsoi-mcp.yourcompany.com/mcp`.
-
-3. Claude lists the tools; enable them and start asking questions.
-
-> **Phase 1 caveat on remote mode:** this build authenticates with a single
-> service account and does **not** implement OAuth, so every user of the remote
-> connector reads through that one account's permissions. That's acceptable for
-> a read-only internal pilot but **must not** be how you ship write actions.
-> Per-user OAuth is the first thing Phase 2 adds. Until then, if you deploy
-> remotely, restrict network access (VPN/allowlist) so only your team can reach
-> the endpoint.
+Claude initiates the OAuth flow, the user signs in at the hosted login page,
+and Claude gets an access token tied to their Tipsoi account. No setup needed
+on the client side.
 
 ---
 
-## Example prompts once connected
+## Example prompts
 
-- "Which employees were absent on 2026-02-18?"
-- "Give me February 2026 attendance for the Dhaka office."
-- "Show the overtime report for February 2026."
-- "What's the leave balance for everyone this quarter?"
-- "Pull the mobile/selfie punch report for last week."
+```
+Was I late today?
+Who was absent on 2026-06-22?
+Show the monthly attendance report for May 2026.
+What's the leave balance for everyone this quarter?
+Apply 2 days annual leave for employee 348229 from 2026-07-01 to 2026-07-02.
+Approve leave log 99012 with comment "Approved".
+```
 
-## Design notes
+---
 
-- **Dates:** tools take `YYYY-MM-DD` (or `year`/`month`); the server converts to
-  Tipsoi's epoch-millisecond format using `Asia/Dhaka` (UTC+6). Override with
-  `TIPSOI_TZ_OFFSET_HOURS`.
-- **Auth refresh:** on a 401 the client refreshes the token, then re-signs in if
-  needed — transparent to the caller.
-- **Errors:** API/auth failures return a structured `{"error": ...}` object
-  instead of throwing, so Claude can explain the problem instead of failing
-  opaquely.
+## Architecture
 
-## What Phase 2 will add (not in this build)
+```
+tipsoi-mcp/
+├── tipsoi_mcp/
+│   ├── server.py        # 19 tools (15 read + 4 write), combined app, ASGI middleware
+│   ├── client.py        # Auth: sign-in, token refresh, GET + POST
+│   ├── oauth_routes.py  # OAuth 2.1 endpoints + login page HTML
+│   ├── token_store.py   # In-memory auth code + access token store (PKCE)
+│   └── dates.py         # YYYY-MM-DD → Tipsoi epoch-ms (Asia/Dhaka)
+├── Dockerfile
+├── render.yaml
+└── pyproject.toml
+```
 
-Per-user OAuth, role-gated write tools (apply/approve leave, OT status, roster
-edits) behind a preview→confirm step, idempotency keys, and full audit logging
-of every AI-initiated action.
+**Request flow (HTTP mode):**
+1. Claude calls `POST /mcp` with `Authorization: Bearer <token>`
+2. `_SessionMiddleware` reads the token, looks up the Tipsoi session, sets a `ContextVar`
+3. Tool handler calls `_client()` → gets a `TipsoiClient` pre-loaded with that user's token
+4. Client calls Tipsoi API, refreshing the token automatically on 401
+
+---
+
+## What still needs to be done
+
+### Must-have before Connectors Directory submission
+
+- [ ] **Persistent token storage** — the current in-memory store loses all
+  sessions on server restart (Render free tier restarts frequently). Replace
+  with Redis or a small SQLite/Postgres DB. Sessions survive restarts;
+  users only need to re-authenticate when their Tipsoi token actually expires.
+
+- [ ] **Token refresh in OAuth flow** — when a user's Tipsoi access token
+  expires, they're currently logged out silently (tools return auth error).
+  The server should use the stored `refreshToken` to get a new one
+  transparently, the same way the single-account client already does.
+
+- [ ] **Logo and branding assets** — Anthropic requires a logo, icon, and
+  screenshots of the connector in action for the directory listing.
+
+- [ ] **Privacy policy + support contact** — required by Anthropic before
+  submission. Minimum: a privacy policy URL and a support email.
+
+- [ ] **Production hosting** — Render free tier sleeps after 15 min of
+  inactivity (30 sec cold start). Upgrade to $7/month Starter or move to a
+  always-on host before submitting to the directory.
+
+### Nice to have / Phase 4
+
+- [ ] **More write tools** from the Postman collection:
+  - `create_employee` / `update_employee`
+  - `update_employee_status` (activate / deactivate)
+  - `create_manual_attendance` (manual punch in/out)
+  - `create_holiday` / `update_holiday`
+  - `create_department` / `create_designation`
+
+- [ ] **Role-gated tools** — check the authenticated user's Tipsoi role before
+  allowing write actions. Employees should not be able to approve their own leave;
+  managers should not touch data outside their office.
+
+- [ ] **Audit log** — record every AI-initiated write action (who, what, when,
+  which tool, what arguments) to a persistent log. Required for any serious
+  enterprise deployment.
+
+- [ ] **Rate limiting** — prevent a misconfigured Claude session from hammering
+  the Tipsoi API. A simple per-token request counter is enough.
+
+- [ ] **Multi-tenant isolation** — the current design uses one Render instance
+  with one `.env`. For selling to multiple companies (each with their own
+  `baseUrl`), the connector URL needs to encode or derive the Tipsoi instance.
+  Options: subdomain routing, a path prefix per client, or a separate deployment
+  per customer.
+
+- [ ] **Test suite** — unit tests for the date helpers and OAuth PKCE validation,
+  integration tests against the test account (`bugtitan@example.com`).
