@@ -55,6 +55,27 @@ class TipsoiClient:
     multi-user flow is a Phase 2+ concern and deliberately not implemented here.
     """
 
+    @classmethod
+    def with_session(
+        cls,
+        access_token: str,
+        refresh_token: str | None = None,
+        user_id: str | None = None,
+        office_id: str | None = None,
+        company_id: str | None = None,
+    ) -> "TipsoiClient":
+        """Create a client that starts with a pre-authenticated Tipsoi token."""
+        client = cls(
+            default_office_id=office_id or os.environ.get("TIPSOI_OFFICE_ID"),
+            default_company_id=company_id or os.environ.get("TIPSOI_COMPANY_ID"),
+        )
+        client._session = Session(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            user_id=user_id,
+        )
+        return client
+
     def __init__(
         self,
         base_url: str | None = None,
@@ -150,9 +171,40 @@ class TipsoiClient:
                 return resp.json()
             return resp.text
 
+    async def post(self, path: str, body: dict[str, Any] | None = None) -> Any:
+        """
+        Authenticated POST. Transparently refreshes / re-signs on 401 once.
+        """
+        url = f"{self.base_url}/{path.lstrip('/')}"
+        async with httpx.AsyncClient(timeout=self._timeout) as http:
+            sess = await self._ensure_session(http)
+            resp = await self._do_post(http, url, body or {}, sess.access_token)
+
+            if resp.status_code == 401:
+                async with self._lock:
+                    new_sess = await self._refresh(http)
+                    if new_sess is None:
+                        new_sess = await self._sign_in(http)
+                    self._session = new_sess
+                resp = await self._do_post(http, url, body or {}, self._session.access_token)
+
+            if resp.status_code >= 400:
+                raise TipsoiAPIError(resp.status_code, url, resp.text[:500])
+
+            if not resp.content:
+                return {"success": True}
+            ctype = resp.headers.get("content-type", "")
+            if "application/json" in ctype:
+                return resp.json()
+            return resp.text
+
     @staticmethod
     async def _do_get(http, url, params, token):
         return await http.get(url, params=params, headers={"Authorization": f"Bearer {token}"})
+
+    @staticmethod
+    async def _do_post(http, url, body, token):
+        return await http.post(url, json=body, headers={"Authorization": f"Bearer {token}"})
 
 
 # ---- helpers --------------------------------------------------------------

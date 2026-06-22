@@ -1,6 +1,6 @@
 [project]
 name = "tipsoi-mcp"
-version = "0.1.0"
+version = "0.3.0"
 description = "Phase 1 (read-only) MCP server for the Tipsoi HRM API"
 requires-python = ">=3.10"
 dependencies = [

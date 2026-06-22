@@ -1,30 +1,20 @@
 """
-Tipsoi MCP Server — Phase 1 (READ-ONLY)
+Tipsoi MCP Server — Phase 2 (per-user OAuth) + Phase 3 (write tools)
 
-Exposes a curated set of read-only Tipsoi HRM endpoints as MCP tools so that
-Claude (or any MCP-capable client) can answer questions about employees,
-attendance, leave, overtime, notifications, and org setup — without being able
-to modify anything.
-
-DESIGN NOTES
-------------
-- Every tool here is a GET. No create/update/delete endpoints are registered.
-  This is the entire safety story for Phase 1: the server is physically
-  incapable of taking a mutating action.
-- Authentication uses ONE service account (env vars). True per-user OAuth is a
-  Phase 2 concern. Treat the configured account's permissions as the ceiling of
-  what the assistant can read.
-- Date inputs are plain YYYY-MM-DD; conversion to Tipsoi's epoch-ms happens
-  server-side.
+Phase 1: 15 read-only tools, single service account.
+Phase 2: OAuth 2.1 proxy — each Claude user signs in with their own Tipsoi
+         credentials. Every tool call uses that user's personal token.
+Phase 3: Write tools — apply / approve / reject leave, manual attendance.
 
 Run modes:
-    python -m tipsoi_mcp.server            # stdio (local testing / Claude Desktop)
-    TIPSOI_TRANSPORT=http python -m tipsoi_mcp.server   # streamable HTTP (remote connector)
+    python -m tipsoi_mcp.server            # stdio (Claude Desktop, single account)
+    TIPSOI_TRANSPORT=http python -m tipsoi_mcp.server   # HTTP (remote connector, per-user OAuth)
 """
 
 from __future__ import annotations
 
 import os
+from contextvars import ContextVar
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
@@ -32,41 +22,94 @@ from mcp.types import ToolAnnotations
 
 from .client import TipsoiClient, TipsoiAPIError, TipsoiAuthError
 from .dates import day_start_ms, day_end_ms, month_range_ms
+from .token_store import token_store, UserSession
 
 _port = int(os.environ.get("PORT", 8000))
 mcp = FastMCP("tipsoi", host="0.0.0.0", port=_port)
-_client = TipsoiClient()
+
+# Service-account client (used in stdio mode or as fallback)
+_service_client = TipsoiClient()
+
+# Per-request user session (set by ASGI middleware in HTTP mode)
+_current_session: ContextVar[UserSession | None] = ContextVar("current_session", default=None)
 
 _ro = ToolAnnotations(readOnlyHint=True)
 
 
 # ---------------------------------------------------------------------------
-# internal helpers
+# ASGI middleware — reads Bearer token, sets _current_session ContextVar
 # ---------------------------------------------------------------------------
 
-def _office_id(office_id: str | None) -> str:
-    oid = office_id or _client.default_office_id
-    if not oid:
-        raise ValueError(
-            "office_id is required. Pass it explicitly or set TIPSOI_OFFICE_ID."
+class _SessionMiddleware:
+    def __init__(self, app):
+        self._app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            headers = {k.lower(): v for k, v in scope.get("headers", [])}
+            auth = headers.get(b"authorization", b"").decode("utf-8", errors="ignore")
+            if auth.startswith("Bearer "):
+                token = auth[7:].strip()
+                session = token_store.get_session(token)
+                _current_session.set(session)
+            else:
+                _current_session.set(None)
+        await self._app(scope, receive, send)
+
+
+# ---------------------------------------------------------------------------
+# Per-request client resolver
+# ---------------------------------------------------------------------------
+
+def _client() -> TipsoiClient:
+    """Return the TipsoiClient for the current request.
+
+    In HTTP mode: returns a client built from the OAuth user's session.
+    In stdio mode (or if no token present): falls back to service account.
+    """
+    session = _current_session.get()
+    if session:
+        return TipsoiClient.with_session(
+            access_token=session.access_token,
+            refresh_token=session.refresh_token,
+            user_id=session.user_id,
+            office_id=session.office_id,
+            company_id=session.company_id,
         )
+    return _service_client
+
+
+def _office_id(office_id: str | None, c: TipsoiClient) -> str:
+    oid = office_id or c.default_office_id
+    if not oid:
+        raise ValueError("office_id is required. Pass it explicitly or set TIPSOI_OFFICE_ID.")
     return oid
 
 
 async def _safe_get(path: str, params: dict[str, Any] | None = None) -> Any:
-    """Wrap client.get so tool callers receive readable error strings, not stack traces."""
     try:
-        return await _client.get(path, params)
+        return await _client().get(path, params)
     except TipsoiAuthError as e:
         return {"error": "authentication_failed", "detail": str(e)}
     except TipsoiAPIError as e:
         return {"error": "api_error", "status": e.status, "detail": e.detail}
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
+        return {"error": "unexpected", "detail": repr(e)}
+
+
+async def _safe_post(path: str, body: dict[str, Any] | None = None) -> Any:
+    try:
+        return await _client().post(path, body)
+    except TipsoiAuthError as e:
+        return {"error": "authentication_failed", "detail": str(e)}
+    except TipsoiAPIError as e:
+        return {"error": "api_error", "status": e.status, "detail": e.detail}
+    except Exception as e:
         return {"error": "unexpected", "detail": repr(e)}
 
 
 # ---------------------------------------------------------------------------
-# Employees
+# Phase 1 — Read-only tools (unchanged)
 # ---------------------------------------------------------------------------
 
 @mcp.tool(annotations=_ro)
@@ -83,10 +126,6 @@ async def list_employees(
         page_number: Zero-based page index.
         per_page: Records per page (keep modest, e.g. 50-500).
         order: 'asc' or 'desc'.
-
-    Returns the raw employee list payload (id, name, department, etc.).
-    Use this to resolve an employee's name to their numeric ID before calling
-    employee- or report-specific tools.
     """
     return await _safe_get(
         "employee",
@@ -104,10 +143,6 @@ async def get_employee(employee_id: str) -> Any:
     return await _safe_get(f"employee/basic-profile/{employee_id}")
 
 
-# ---------------------------------------------------------------------------
-# Attendance reports
-# ---------------------------------------------------------------------------
-
 @mcp.tool(annotations=_ro)
 async def monthly_attendance(
     year: int,
@@ -123,16 +158,17 @@ async def monthly_attendance(
     Args:
         year: e.g. 2026.
         month: 1-12.
-        office_id: Tipsoi office ID. Falls back to TIPSOI_OFFICE_ID if omitted.
+        office_id: Tipsoi office ID. Falls back to the logged-in user's office if omitted.
         employee_name: Optional name filter (substring).
         status: 1 = active employees.
         per_page / page_number: Pagination.
     """
+    c = _client()
     start, end = month_range_ms(year, month)
     return await _safe_get(
         "attendance",
         {
-            "officeId": _office_id(office_id),
+            "officeId": _office_id(office_id, c),
             "employeeName": employee_name,
             "order": "asc",
             "pageNumber": page_number,
@@ -158,15 +194,16 @@ async def daily_attendance_summary(
 
     Args:
         date: YYYY-MM-DD.
-        office_id: Falls back to TIPSOI_OFFICE_ID if omitted.
+        office_id: Falls back to the logged-in user's office if omitted.
         employee_name: Optional name filter.
         status: 1 = active employees.
         per_page: Pagination size.
     """
+    c = _client()
     return await _safe_get(
         "attendance/daily-summary",
         {
-            "officeId": _office_id(office_id),
+            "officeId": _office_id(office_id, c),
             "employeeName": employee_name,
             "order": "asc",
             "pageNumber": 0,
@@ -191,15 +228,16 @@ async def daily_absent_report(
 
     Args:
         date: YYYY-MM-DD.
-        office_id: Falls back to TIPSOI_OFFICE_ID if omitted.
+        office_id: Falls back to the logged-in user's office if omitted.
         absent_type: Tipsoi absent classification code (default 1).
         per_page: Pagination size.
     """
+    c = _client()
     return await _safe_get(
         "attendance/daily-absent",
         {
             "absentType": absent_type,
-            "officeId": _office_id(office_id),
+            "officeId": _office_id(office_id, c),
             "employeeName": "",
             "order": "asc",
             "pageNumber": 0,
@@ -226,15 +264,16 @@ async def late_report(
     Args:
         from_date: YYYY-MM-DD (inclusive).
         to_date: YYYY-MM-DD (inclusive).
-        office_id: Falls back to TIPSOI_OFFICE_ID.
-        company_id: Falls back to TIPSOI_COMPANY_ID.
+        office_id: Falls back to the logged-in user's office.
+        company_id: Falls back to the logged-in user's company.
         per_page: Pagination size.
     """
+    c = _client()
     return await _safe_get(
         "attendance/leave-late-absent",
         {
-            "companyId": company_id or _client.default_company_id,
-            "officeId": _office_id(office_id),
+            "companyId": company_id or c.default_company_id,
+            "officeId": _office_id(office_id, c),
             "employeeName": "",
             "order": "asc",
             "pageNumber": 0,
@@ -260,15 +299,16 @@ async def mobile_punch_report(
     Args:
         from_date: YYYY-MM-DD (inclusive).
         to_date: YYYY-MM-DD (inclusive).
-        office_id: Falls back to TIPSOI_OFFICE_ID.
+        office_id: Falls back to the logged-in user's office.
         per_page: Pagination size.
     """
+    c = _client()
     return await _safe_get(
         "mobile-punch",
         {
             "dinnerFilter": -1,
             "lunchFilter": -1,
-            "officeId": _office_id(office_id),
+            "officeId": _office_id(office_id, c),
             "employeeName": "",
             "order": "asc",
             "pageNumber": 0,
@@ -280,10 +320,6 @@ async def mobile_punch_report(
         },
     )
 
-
-# ---------------------------------------------------------------------------
-# Leave
-# ---------------------------------------------------------------------------
 
 @mcp.tool(annotations=_ro)
 async def leave_balance_report(
@@ -297,13 +333,14 @@ async def leave_balance_report(
     Args:
         from_date: YYYY-MM-DD.
         to_date: YYYY-MM-DD.
-        office_id: Falls back to TIPSOI_OFFICE_ID.
+        office_id: Falls back to the logged-in user's office.
         per_page: Pagination size.
     """
+    c = _client()
     return await _safe_get(
         "attendance/leave-balance",
         {
-            "officeId": _office_id(office_id),
+            "officeId": _office_id(office_id, c),
             "employeeName": "",
             "order": "asc",
             "pageNumber": 0,
@@ -323,18 +360,15 @@ async def applied_leave_list(
     page: int = 0,
     count: int = 100,
 ) -> Any:
-    """List applied leave requests and their statuses (READ-ONLY view).
+    """List applied leave requests and their approval statuses.
 
     Args:
         keyword: Optional search term.
-        statuses: List of status codes to include (e.g. [0,1] for pending+approved).
-                  Defaults to [0, 1].
+        statuses: Status codes to include. Defaults to [0, 1] (pending + approved).
         page: Zero-based page index.
         count: Page size.
-
-    NOTE: This only *reads* leave applications. Applying/approving/rejecting
-    leave is a write action and is intentionally NOT available in Phase 1.
     """
+    from urllib.parse import urlencode
     params: list[tuple[str, Any]] = [
         ("keyword", keyword),
         ("page", page),
@@ -342,14 +376,9 @@ async def applied_leave_list(
     ]
     for s in (statuses if statuses is not None else [0, 1]):
         params.append(("status", s))
-    from urllib.parse import urlencode
     qs = urlencode(params)
     return await _safe_get(f"leave-management/leave-history/?{qs}")
 
-
-# ---------------------------------------------------------------------------
-# Overtime
-# ---------------------------------------------------------------------------
 
 @mcp.tool(annotations=_ro)
 async def monthly_overtime_report(
@@ -364,16 +393,17 @@ async def monthly_overtime_report(
     Args:
         year: e.g. 2026.
         month: 1-12.
-        office_id: Falls back to TIPSOI_OFFICE_ID.
-        company_id: Falls back to TIPSOI_COMPANY_ID.
+        office_id: Falls back to the logged-in user's office.
+        company_id: Falls back to the logged-in user's company.
         per_page: Pagination size.
     """
+    c = _client()
     start, end = month_range_ms(year, month)
     return await _safe_get(
         "overtime/report",
         {
-            "companyId": company_id or _client.default_company_id,
-            "officeId": _office_id(office_id),
+            "companyId": company_id or c.default_company_id,
+            "officeId": _office_id(office_id, c),
             "employeeName": "",
             "order": "asc",
             "pageNumber": 0,
@@ -384,10 +414,6 @@ async def monthly_overtime_report(
         },
     )
 
-
-# ---------------------------------------------------------------------------
-# Org setup / reference data
-# ---------------------------------------------------------------------------
 
 @mcp.tool(annotations=_ro)
 async def list_workplaces() -> Any:
@@ -432,13 +458,120 @@ async def list_notifications(page_number: int = 0, per_page: int = 20) -> Any:
 
 
 # ---------------------------------------------------------------------------
-# entrypoint
+# Phase 3 — Write tools
+# ---------------------------------------------------------------------------
+
+@mcp.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False))
+async def apply_leave(
+    employee_id: str,
+    leave_category_id: str,
+    from_date: str,
+    to_date: str,
+    reason: str = "",
+    is_half_day: bool = False,
+) -> Any:
+    """Apply for leave on behalf of an employee.
+
+    Args:
+        employee_id: Tipsoi employee ID.
+        leave_category_id: ID of the leave category (e.g. annual leave, sick leave).
+                           Use applied_leave_list or list_employees to discover valid IDs.
+        from_date: Leave start date, YYYY-MM-DD.
+        to_date: Leave end date, YYYY-MM-DD (inclusive).
+        reason: Optional reason / note for the leave request.
+        is_half_day: True for a half-day leave request.
+    """
+    body = {
+        "leaveCategoryId": leave_category_id,
+        "fromDate": day_start_ms(from_date),
+        "toDate": day_end_ms(to_date),
+        "reason": reason,
+        "isHalfDay": is_half_day,
+    }
+    return await _safe_post(f"leave-management/apply/employee/{employee_id}", body)
+
+
+@mcp.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False))
+async def approve_leave(
+    leave_log_id: str,
+    approver_comment: str = "",
+) -> Any:
+    """Approve a pending leave application.
+
+    Args:
+        leave_log_id: The leave log ID to approve. Get this from applied_leave_list.
+        approver_comment: Optional comment from the approver.
+    """
+    return await _safe_post(
+        f"leave-management/approve/{leave_log_id}",
+        {"approverComment": approver_comment},
+    )
+
+
+@mcp.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True))
+async def reject_leave(
+    leave_log_id: str,
+    cancellation_reason: str = "",
+) -> Any:
+    """Reject or cancel a leave application.
+
+    Args:
+        leave_log_id: The leave log ID to reject. Get this from applied_leave_list.
+        cancellation_reason: Reason for rejection (shown to the employee).
+    """
+    return await _safe_post(
+        f"leave-management/cancel/{leave_log_id}",
+        {"cancellationReason": cancellation_reason},
+    )
+
+
+@mcp.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False))
+async def adjust_leave(
+    leave_log_id: str,
+    from_date: str,
+    to_date: str,
+    reason: str = "",
+) -> Any:
+    """Adjust the dates of an existing leave application.
+
+    Args:
+        leave_log_id: The leave log ID to adjust.
+        from_date: New start date, YYYY-MM-DD.
+        to_date: New end date, YYYY-MM-DD.
+        reason: Reason for the adjustment.
+    """
+    body = {
+        "fromDate": day_start_ms(from_date),
+        "toDate": day_end_ms(to_date),
+        "reason": reason,
+    }
+    return await _safe_post(f"leave-management/adjust/{leave_log_id}", body)
+
+
+# ---------------------------------------------------------------------------
+# Entrypoint
 # ---------------------------------------------------------------------------
 
 def main() -> None:
     transport = os.environ.get("TIPSOI_TRANSPORT", "stdio").lower()
+
     if transport in ("http", "streamable-http", "streamable_http"):
-        mcp.run(transport="streamable-http")
+        import uvicorn
+        from starlette.applications import Starlette
+        from starlette.routing import Mount
+
+        from .oauth_routes import make_routes
+
+        # Build combined app: OAuth routes + FastMCP
+        fastmcp_app = mcp.streamable_http_app()
+        combined = Starlette(routes=[
+            *make_routes(),
+            Mount("/", app=fastmcp_app),
+        ])
+        # Wrap with session middleware (reads Bearer token → sets ContextVar)
+        app = _SessionMiddleware(combined)
+
+        uvicorn.run(app, host="0.0.0.0", port=_port, log_level="info")
     else:
         mcp.run(transport="stdio")
 
