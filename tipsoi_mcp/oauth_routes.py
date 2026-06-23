@@ -108,16 +108,22 @@ def _login_page(
     error: str = "",
     prefill_email: str = "",
 ) -> HTMLResponse:
-    error_block = f'<div class="error">{error}</div>' if error else ""
-    html = _LOGIN_HTML.format(
-        redirect_uri=_esc(redirect_uri),
-        state=_esc(state),
-        client_id=_esc(client_id),
-        code_challenge=_esc(code_challenge),
-        code_challenge_method=_esc(code_challenge_method),
-        error_block=error_block,
-        prefill_email=_esc(prefill_email),
-    )
+    error_block = f'<div class="error">{_esc(error)}</div>' if error else ""
+    # NOTE: use literal-string replacement, NOT str.format(): the <style> block
+    # contains CSS braces ({...}) that str.format() would parse as replacement
+    # fields and raise KeyError. Replacement on explicit {token} markers is safe.
+    replacements = {
+        "{redirect_uri}": _esc(redirect_uri),
+        "{state}": _esc(state),
+        "{client_id}": _esc(client_id),
+        "{code_challenge}": _esc(code_challenge),
+        "{code_challenge_method}": _esc(code_challenge_method),
+        "{error_block}": error_block,
+        "{prefill_email}": _esc(prefill_email),
+    }
+    html = _LOGIN_HTML
+    for token, value in replacements.items():
+        html = html.replace(token, value)
     return HTMLResponse(html)
 
 
