@@ -597,6 +597,7 @@ def main() -> None:
 
     if transport in ("http", "streamable-http", "streamable_http"):
         import uvicorn
+        from contextlib import asynccontextmanager
         from starlette.applications import Starlette
         from starlette.routing import Mount
 
@@ -604,10 +605,23 @@ def main() -> None:
 
         # Build combined app: OAuth routes + FastMCP
         fastmcp_app = mcp.streamable_http_app()
-        combined = Starlette(routes=[
-            *make_routes(),
-            Mount("/", app=fastmcp_app),
-        ])
+
+        # The StreamableHTTP session manager starts its task group inside the
+        # FastMCP app's own lifespan. A parent Starlette does NOT run a mounted
+        # sub-app's lifespan, so we must run the session manager ourselves here —
+        # otherwise every /mcp request raises "Task group is not initialized".
+        @asynccontextmanager
+        async def lifespan(_app):
+            async with mcp.session_manager.run():
+                yield
+
+        combined = Starlette(
+            routes=[
+                *make_routes(),
+                Mount("/", app=fastmcp_app),
+            ],
+            lifespan=lifespan,
+        )
         # Wrap with session middleware (reads Bearer token → sets ContextVar)
         app = _SessionMiddleware(combined)
 
