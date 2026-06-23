@@ -458,6 +458,17 @@ async def list_holidays() -> Any:
 
 
 @mcp.tool(annotations=_ro)
+async def list_leave_categories() -> Any:
+    """List the organization's leave categories with their numeric IDs.
+
+    Call this BEFORE apply_leave or adjust_leave to discover the correct
+    `leave_category_id` for a category name like 'Casual Leave' or
+    'Medical Leave'. Never guess category IDs — they are org-specific.
+    """
+    return await _safe_get("leave-category")
+
+
+@mcp.tool(annotations=_ro)
 async def list_notifications(page_number: int = 0, per_page: int = 20) -> Any:
     """List recent notifications for the authenticated account.
 
@@ -492,7 +503,8 @@ async def apply_leave(
     Args:
         employee_id: Tipsoi employee ID.
         leave_category_id: Numeric ID of the leave category (e.g. annual, sick).
-                           Discover valid IDs via the leave-category config.
+                           ALWAYS get this from list_leave_categories first —
+                           never guess. IDs are org-specific.
         from_date: Leave start date, YYYY-MM-DD.
         to_date: Leave end date, YYYY-MM-DD (inclusive).
         reason: Optional reason / note for the leave request.
