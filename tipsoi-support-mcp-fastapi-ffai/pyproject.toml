@@ -1,0 +1,22 @@
+[project]
+name = "tipsoi-support-mcp"
+version = "1.0.0"
+description = "Support-only MCP server for Tipsoi — knowledge-base Q&A + escalation to human support"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.2.0",
+    "httpx>=0.27",
+]
+
+[project.scripts]
+tipsoi-support-mcp = "tipsoi_support_mcp.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["tipsoi_support_mcp"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"tipsoi_support_mcp/kb_docs" = "tipsoi_support_mcp/kb_docs"
