@@ -1,0 +1,2555 @@
+{
+  "info": {
+    "_postman_id": "11306ada-583a-4c3f-ba1e-660bfc0caadb",
+    "name": "Tipsoi HRM Complete API",
+    "description": "Complete collection of all APIs from the Tipsoi HRM documentation.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "33674666"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Sign In",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ilham@example.com\",\n  \"password\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/external-sync/sign-in",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "external-sync",
+                "sign-in"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiI4Iiwic3ViIjoiMjczNjUyIiwiYXVkIjoiMjczNjUyIiwianRpIjoiYTc0NmI4MDAtOWMwNy00MjkwLTg3Y2MtYmEyZTYxNWQ3NTZmIiwiaWF0IjoxNzcwNjExNzUzLCJleHAiOjE3ODcwMjc3NTN9.TB76xsrvdULohFjseFjMR0D8Tzee-B2Q0dYuegGzJUNxbFIVSimqYP0FIT4SDMAM-AgK_4-hPX_aavqyBKbiHQ\",\n  \"userId\": \"273652\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sign Out",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/signout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "signout"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sign Up",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"office_name\": \"office_name\",\n  \"employee_name\": \"employee_name\",\n  \"employee_email\": \"employee_email\",\n  \"employee_phone\": \"employee_phone\",\n  \"employee_password\": \"employee_password\",\n  \"device_identifier\": \"device_identifier\",\n  \"device_imei\": \"device_imei\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/sign-up",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "sign-up"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Employee Management",
+      "item": [
+        {
+          "name": "Create Employee",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n//   \"name\": \"{{$randomFullName}}\",\n//   \"employeeOfficeId\": {{$randomInt}},\n//   \"email\": \"{{$randomExampleEmail}}\",\n  \"name\": \"Testing 3\",\n  \"employeeOfficeId\": 3,\n  \"email\": \"testing3@example.com\",\n  \"gender\":1,\n  \"password\":\"Tipsoi@25\",\n  \"reportPosition\":null,\n  \"shiftId\":null,\n  \"shiftGroupId\":null,\n  \"leavePolicyId\":null,\n  \"primaryDisplayText\":null,\n  \"secondaryDisplayText\":null,\n  \"departmentId\":null,\n  \"subDepartmentId\":null,\n  \"designationId\":null,\n  \"employeeIdentifier\":null,\n  \"weeklyOffDayPolicyId\":null,\n  \"rfid\":null,\n  \"personId3rdPartyDevice\":null,\n  \"workplaceId\":null,\n  \"dateOfJoin\":null,\n  \"dateOfResignation\":null,\n  \"employmentTypeId\":null,\n  \"subsidiaryId\":null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employee",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employee"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Employee List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/employee?order=asc&pageNumber=0&perPage=2000&status=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employee"
+              ],
+              "query": [
+                {
+                  "key": "order",
+                  "value": "asc"
+                },
+                {
+                  "key": "pageNumber",
+                  "value": "0"
+                },
+                {
+                  "key": "perPage",
+                  "value": "2000"
+                },
+                {
+                  "key": "status",
+                  "value": "1",
+                  "description": "0 = Inactive, 1 = Active, 2 = Terminated, 3 = Resigned, 4 = Transferred"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Single Employee",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/employee/basic-profile/:employeeId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employee",
+                "basic-profile",
+                ":employeeId"
+              ],
+              "variable": [
+                {
+                  "key": "employeeId",
+                  "value": "273703"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Employee Profile",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\":\"Test Ilham 2\",\n  \"employeeOfficeId\": \"9870\",\n  \"Email\": \"ilhamtest99@gmail.com\",\n  \"departmentId\":0,\n  \"subDepartmentId\":0,\n  \"designationId\": 0,\n  \"employmentTypeId\":0,\n  \"shiftGroupId\":null,\n  \"primaryDisplayText\":\"Welcome\",\n  \"secondaryDisplayText\":\"Test\",\n  \"rfid\":null,\n  \"reportPosition\":null,\n  \"dateOfJoin\":null,\n  \"dateOfResignation\":null,\n  \"workplaceId\":null,\n  \"lineManagerId\":-1,\n  \"hrManagerId\":-1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employee/profile/:employeeId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employee",
+                "profile",
+                ":employeeId"
+              ],
+              "variable": [
+                {
+                  "key": "employeeId",
+                  "value": "325206"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Employee (Single)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeIdList\": [{{$randomInt}}]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employee/delete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employee",
+                "delete"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Employee Status (Active/Inactive)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/employee/:employeeId/status/:code",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employee",
+                ":employeeId",
+                "status",
+                ":code"
+              ],
+              "variable": [
+                {
+                  "key": "employeeId",
+                  "value": "273747"
+                },
+                {
+                  "key": "code",
+                  "value": "3",
+                  "description": "0 = Inactive, 1 = Active, 2 = Terminated, 3 = Resigned, 4 = Transferred"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rehire Employee",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": 273747\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employee/rehire",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employee",
+                "rehire"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change OT Status",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"allowOvertime\": true,\n  \"employeeIdList\": [273703, 275147]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/overtime/change-status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "overtime",
+                "change-status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Password (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"123456\",\n  \"confirmPassword\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employee/password/:employeeId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employee",
+                "password",
+                ":employeeId"
+              ],
+              "variable": [
+                {
+                  "key": "employeeId",
+                  "value": "273703"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Privileges (Admin/Manager)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isAdmin\": false,\n  \"isHrManager\": false,\n  \"isLineManager\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employee/:employeeId/managerOrAdminRole",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employee",
+                ":employeeId",
+                "managerOrAdminRole"
+              ],
+              "variable": [
+                {
+                  "key": "employeeId",
+                  "value": "325206"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Employee Avatar",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "uuid": "7b41ae63-9c2e-4729-8a0f-2c30a45ccf64",
+                  "src": [
+                    "postman-cloud:///1f10d578-1b51-4480-9a50-d973eb4848ce",
+                    "postman-cloud:///1f10d578-1bb7-4d20-b982-f1649f7629a8"
+                  ]
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employee/profile/picture/:employeeId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employee",
+                "profile",
+                "picture",
+                ":employeeId"
+              ],
+              "variable": [
+                {
+                  "key": "employeeId",
+                  "value": "280478"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Biometric & Devices",
+      "item": [
+        {
+          "name": "Start Person Enrollment",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deviceId\": 22577,\n  \"employeeId\": 273699,\n  \"finger\": \"index\",\n  \"hand\": \"right\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/devices/person-enrolment/start",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "devices",
+                "person-enrolment",
+                "start"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Enrolled Fingers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/employee/enrollment/:employeeId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employee",
+                "enrollment",
+                ":employeeId"
+              ],
+              "variable": [
+                {
+                  "key": "employeeId",
+                  "value": "280478"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Device List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/devices?officeId=4397",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "devices"
+              ],
+              "query": [
+                {
+                  "key": "officeId",
+                  "value": "4397"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Notification List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notification?pageNumber=0&perPage=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notification"
+              ],
+              "query": [
+                {
+                  "key": "pageNumber",
+                  "value": "0"
+                },
+                {
+                  "key": "perPage",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Notification Settings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has a 'message' property equal to 'Success'\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.eql(\"Success\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response has a 'notificationSettingsResponseList' property\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"notificationSettingsResponseList\");",
+                  "});",
+                  "",
+                  "pm.test(\"'notificationSettingsResponseList' is an array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.notificationSettingsResponseList).to.be.an(\"array\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is less than 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response body is valid JSON\", function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "packages": {},
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notificationGroupIds\": [100, 400]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notification/get-all/:employeeId?notificationGroupIds=100&notificationGroupIds=400",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notification",
+                "get-all",
+                ":employeeId"
+              ],
+              "query": [
+                {
+                  "key": "notificationGroupIds",
+                  "value": "100"
+                },
+                {
+                  "key": "notificationGroupIds",
+                  "value": "400"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "employeeId",
+                  "value": "273652"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Shift Management",
+      "item": [
+        {
+          "name": "Create Shift",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.data && jsonData.data.id) {",
+                  "    pm.collectionVariables.set(\"testShiftId\", jsonData.data.id);",
+                  "} else if (jsonData && jsonData.id) {",
+                  "    pm.collectionVariables.set(\"testShiftId\", jsonData.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\":\"{{$randomNameSuffix}}\",\n  \"startTime\":32400000,\n  \"workHour\":32400000,\n  \"lateOffsetFromStartTime\":900000,\n  \"earlyExitOffsetFromStartTime\":31500000,\n  \"firstHalfDuration\":14400000,\n  \"breakDuration\":3600000,\n  \"color\":\"#FF0000\",\n  \"initial\":\"T\",\n  \"firstHalfAbsentEnabled\":false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shiftn",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shiftn"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Shift List",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shiftn",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shiftn"
+              ],
+              "query": [
+                {
+                  "key": "officeId",
+                  "value": "0",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Shift",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\":\"Testing\",\n  \"startTime\":32400000,\n  \"workHour\":32400000,\n  \"lateOffsetFromStartTime\":900000,\n  \"earlyExitOffsetFromStartTime\":31500000,\n  \"firstHalfDuration\":14400000,\n  \"breakDuration\":3600000,\n  \"color\":\"#FF0000\",\n  \"initial\":\"T\",\n  \"firstHalfAbsentEnabled\":false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shiftn/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shiftn",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "9130"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Shift",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/shiftn/:id/delete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shiftn",
+                ":id",
+                "delete"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{testShiftId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Shift Group",
+      "item": [
+        {
+          "name": "Create Shift Group",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Testing\",\n  \"defaultOffDays\": \"5\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shift-group",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shift-group"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Shift Group List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/shift-group",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shift-group"
+              ],
+              "query": [
+                {
+                  "key": "officeId",
+                  "value": "0",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Shift Group",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test\",\n  \"defaultOffDays\": \"5,6\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shift-group/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shift-group",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "10985"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Shift Group",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/shift-group/:id/delete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shift-group",
+                ":id",
+                "delete"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "10983"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Roster Management",
+      "item": [
+        {
+          "name": "Create Roster",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"change\": [\n    {\n      \"shiftGroupId\": 10985,\n      \"shiftId\": 9091,\n      \"offdays\": [0],\n      \"effectiveDate\": 1771178400000\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/roster/advanced",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "roster",
+                "advanced"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Roster List (Summary)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/roster",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "roster"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Single Roster (Profile)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/roster/profile?employeeId=273703&year=2026&month=2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "roster",
+                "profile"
+              ],
+              "query": [
+                {
+                  "key": "employeeId",
+                  "value": "273703"
+                },
+                {
+                  "key": "year",
+                  "value": "2026"
+                },
+                {
+                  "key": "month",
+                  "value": "2"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Roster",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftGroupId\":10985,\n  \"shiftId\":9130,\n  \"offdays\":[5,6],\n  \"effectiveDate\":\"1771178400000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/roster/basic",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "roster",
+                "basic"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Office Setup (Holiday, Dept, Desig)",
+      "item": [
+        {
+          "name": "Create Holiday",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Eid Day\",\n  \"holidayDate\": 1771696800000,\n  \"officeId\": 4397\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/holiday",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "holiday"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Holiday List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/holiday",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "holiday"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Holiday (or Delete)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Qadr day\",\n  \"holidayDate\": 1771437600000,\n  \"status\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/holiday/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "holiday",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "15246"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Designation",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Software Tester\",\n  \"hierarchy\": 1,\n  \"status\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/designation",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "designation"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Designation List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/designation",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "designation"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Designation (or Delete)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"CEO\",\n  \"hierarchy\": 1,\n  \"status\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/designation/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "designation",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "42896"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Department",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Support\",\n  \"hierarchy\": 1,\n  \"officeId\": 4397\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/department",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "department"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Department List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/department?includeInactive=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "department"
+              ],
+              "query": [
+                {
+                  "key": "includeInactive",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Department (or Delete)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Engineering\",\n  \"hierarchy\": 1,\n  \"status\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/department/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "department",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "25311"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Leave Configuration",
+      "item": [
+        {
+          "name": "Create Leave Policy",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Employee Policy\",\n  \"officeId\": 4397,\n  \"status\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave-policy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave-policy"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Leave Policy List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/leave-policy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave-policy"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Leave Policy",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Common Policy\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave-policy/update-name/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave-policy",
+                "update-name",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "2293"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Leave Policy",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave-policy/delete/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave-policy",
+                "delete",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1758"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Leave Category",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Paternity Leave\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave-category",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave-category"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Leave Category List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/leave-category",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave-category"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Leave Category (or Delete)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Duty Leave\",\n  \"status\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave-category/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave-category",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "2521"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Leave Configs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/leave-category-policy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave-category-policy"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Leave Category Policy",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"leaveCategoryId\":3303,\n    \"totalDays\":12,\n    \"consecutiveDays\":0,\n    \"monthlyRestriction\":0,\n    \"fileUploadCondition\":0,\n    \"maxCarry\":0,\n    \"countOffdays\":false,\n    \"carryType\":0,\n    \"pastDateSelectionEnabled\":true,\n    \"pastDateSelectionLimit\":30,\n    \"earnedLeaveEnabled\":false,\n    \"earnedLeaveCriteria\":0,\n    \"maxEarnedLeaveCount\":0,\n    \"perDayEarnedLeaveRequiredHours\":0,\n    \"earnedLeaveCapType\":0,\n    \"earnedLeaveCapAmount\":0,\n    \"expiryTimeWindowAmount\":0,\n    \"expiryTimeWindowType\":0,\n    \"applicability\":0,\n    \"eligibleAfter\":null,\n    \"proRataEnabled\":false,\n    \"maxAvailTimes\":null,\n    \"isSingleLeaveApproverAllowed\":false,\n    \"isLeaveApproveSequential\":false\n  }\n]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave-category-policy/create/:leavePolicyId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave-category-policy",
+                "create",
+                ":leavePolicyId"
+              ],
+              "variable": [
+                {
+                  "key": "leavePolicyId",
+                  "value": "2294"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Config to Policy",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leaveCategoryId\":3303,\n  \"totalDays\":12,\n  \"consecutiveDays\":0,\n  \"monthlyRestriction\":0,\n  \"fileUploadCondition\":0,\n  \"maxCarry\":0,\n  \"countOffdays\":false,\n  \"carryType\":0,\n  \"pastDateSelectionLimit\":30,\n  \"earnedLeaveEnabled\":false,\n  \"earnedLeaveCriteria\":0,\n  \"maxEarnedLeaveCount\":0,\n  \"perDayEarnedLeaveRequiredHours\":0,\n  \"earnedLeaveCapType\":0,\n  \"earnedLeaveCapAmount\":0,\n  \"expiryTimeWindowAmount\":0,\n  \"expiryTimeWindowType\":0,\n  \"applicability\":0,\n  \"eligibleAfter\":null,\n  \"proRataEnabled\":false,\n  \"maxAvailTimes\":null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave-category-policy/add-new/:leavePolicyId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave-category-policy",
+                "add-new",
+                ":leavePolicyId"
+              ],
+              "variable": [
+                {
+                  "key": "leavePolicyId",
+                  "value": "2293"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Configs by Policy",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/leave-category-policy/configs-by-leave-policy/:leavePolicyId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave-category-policy",
+                "configs-by-leave-policy",
+                ":leavePolicyId"
+              ],
+              "variable": [
+                {
+                  "key": "leavePolicyId",
+                  "value": "2293"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete All Configurations of a Leave Policy",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Paternity Leave\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave-category-policy/delete-by-policy/:leavePolicyId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave-category-policy",
+                "delete-by-policy",
+                ":leavePolicyId"
+              ],
+              "variable": [
+                {
+                  "key": "leavePolicyId",
+                  "value": "2294"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Leave Category Policy Configuration",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Paternity Leave\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave-category-policy/delete/:leaveCategoryPolicyConfigId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave-category-policy",
+                "delete",
+                ":leaveCategoryPolicyConfigId"
+              ],
+              "variable": [
+                {
+                  "key": "leaveCategoryPolicyConfigId",
+                  "value": "4274"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Leave Application",
+      "item": [
+        {
+          "name": "Apply Leave",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "postBody",
+                  "value": "{\"leaveCategoryId\":3299,\"reason\":\"I am sick\",\"forceApproval\":true,\"fiscalYearStartDate\":1767204000000,\"fiscalYearEndDate\":1798739999000,\"startDate\":1771351200000,\"endDate\":1771351200000,\"isHalfDay\":false}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave-management/apply/employee/:employeeId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave-management",
+                "apply",
+                "employee",
+                ":employeeId"
+              ],
+              "variable": [
+                {
+                  "key": "employeeId",
+                  "value": "273699"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Applied Leave List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/leave-management/leave-history/?keyword=&page=0&count=100&status=0&status=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave-management",
+                "leave-history",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": ""
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "count",
+                  "value": "100"
+                },
+                {
+                  "key": "status",
+                  "value": "0",
+                  "description": "0 = Pending"
+                },
+                {
+                  "key": "status",
+                  "value": "1",
+                  "description": "1 = Approved"
+                },
+                {
+                  "key": "status",
+                  "value": "2",
+                  "description": "2 = Rejected",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "3",
+                  "description": "3 = Cancelled",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Adjust Leave App",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "uuid": "3a7ec217-3c5f-4c59-8c6a-db153642299d",
+                  "value": null
+                },
+                {
+                  "key": "postBody",
+                  "value": "{\"leaveCategoryId\":3242,\"startDate\":\"1771783200000\",\"endDate\":\"1771869599000\",\"reason\":\"I am sick\",\"employeeIdentifier\":\"\",\"isHalfDay\":false}",
+                  "type": "text",
+                  "uuid": "6e2fb3a1-ef3d-4c67-8236-b7c2db072653"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave-management/adjust/:leaveLogId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave-management",
+                "adjust",
+                ":leaveLogId"
+              ],
+              "variable": [
+                {
+                  "key": "leaveLogId",
+                  "value": "246268"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Leave",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approverComment\": \"Approved by Ilham sama\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave-management/approve/:leaveLogId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave-management",
+                "approve",
+                ":leaveLogId"
+              ],
+              "variable": [
+                {
+                  "key": "leaveLogId",
+                  "value": "246291"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel/Reject Leave",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cancellationReason\": \"Not Approved\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave-management/cancel/:leaveLogId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave-management",
+                "cancel",
+                ":leaveLogId"
+              ],
+              "variable": [
+                {
+                  "key": "leaveLogId",
+                  "value": "246268"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Monthly Attendance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/attendance?employeeName=&officeId=4397&order=asc&pageNumber=0&perPage=2000&reportType=department&sortKey=reportPosition&status=1&from=1771092000000&to=1771437599999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "attendance"
+              ],
+              "query": [
+                {
+                  "key": "companyId",
+                  "value": "4146",
+                  "disabled": true
+                },
+                {
+                  "key": "employeeName",
+                  "value": ""
+                },
+                {
+                  "key": "officeId",
+                  "value": "4397"
+                },
+                {
+                  "key": "order",
+                  "value": "asc"
+                },
+                {
+                  "key": "pageNumber",
+                  "value": "0"
+                },
+                {
+                  "key": "perPage",
+                  "value": "2000"
+                },
+                {
+                  "key": "reportType",
+                  "value": "department"
+                },
+                {
+                  "key": "sortKey",
+                  "value": "reportPosition"
+                },
+                {
+                  "key": "status",
+                  "value": "1"
+                },
+                {
+                  "key": "from",
+                  "value": "1771092000000"
+                },
+                {
+                  "key": "to",
+                  "value": "1771437599999"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Daily Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/attendance/daily-summary?employeeName=&from=1771351200000&officeId=4397&order=asc&pageNumber=0&perPage=2000&reportType=daily&sortKey=reportPosition&status=1&to=1771437599999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "attendance",
+                "daily-summary"
+              ],
+              "query": [
+                {
+                  "key": "companyId",
+                  "value": "4146",
+                  "disabled": true
+                },
+                {
+                  "key": "employeeName",
+                  "value": ""
+                },
+                {
+                  "key": "from",
+                  "value": "1771351200000"
+                },
+                {
+                  "key": "officeId",
+                  "value": "4397"
+                },
+                {
+                  "key": "order",
+                  "value": "asc"
+                },
+                {
+                  "key": "pageNumber",
+                  "value": "0"
+                },
+                {
+                  "key": "perPage",
+                  "value": "2000"
+                },
+                {
+                  "key": "reportType",
+                  "value": "daily"
+                },
+                {
+                  "key": "sortKey",
+                  "value": "reportPosition"
+                },
+                {
+                  "key": "status",
+                  "value": "1",
+                  "description": "0 = Inactive, 1 = Active, 2 = Resigned, 3 = Terminated, 4 = Transfered"
+                },
+                {
+                  "key": "to",
+                  "value": "1771437599999"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Daily Absent Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/attendance/daily-absent?absentType=1&employeeName=&officeId=4397&order=asc&pageNumber=0&perPage=2000&reportType=3&sortKey=reportPosition&status=1&from=1771351200000&to=1771437599999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "attendance",
+                "daily-absent"
+              ],
+              "query": [
+                {
+                  "key": "absentType",
+                  "value": "1"
+                },
+                {
+                  "key": "companyId",
+                  "value": "4146",
+                  "disabled": true
+                },
+                {
+                  "key": "employeeName",
+                  "value": ""
+                },
+                {
+                  "key": "officeId",
+                  "value": "4397"
+                },
+                {
+                  "key": "order",
+                  "value": "asc"
+                },
+                {
+                  "key": "pageNumber",
+                  "value": "0"
+                },
+                {
+                  "key": "perPage",
+                  "value": "2000"
+                },
+                {
+                  "key": "reportType",
+                  "value": "3"
+                },
+                {
+                  "key": "sortKey",
+                  "value": "reportPosition"
+                },
+                {
+                  "key": "status",
+                  "value": "1",
+                  "description": "0 = Inactive, 1 = Active, 2 = Terminated, 3=Resigned, 4=Transferred"
+                },
+                {
+                  "key": "from",
+                  "value": "1771351200000"
+                },
+                {
+                  "key": "to",
+                  "value": "1771437599999"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Leave History Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/attendance/leave-history?employeeBeforeEndTime=true&employeeName=&officeId=4397&order=asc&pageNumber=0&perPage=2000&sortKey=reportPosition&status=1&from=1769882400000&to=1772301599999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "attendance",
+                "leave-history"
+              ],
+              "query": [
+                {
+                  "key": "companyId",
+                  "value": "4146",
+                  "disabled": true
+                },
+                {
+                  "key": "employeeBeforeEndTime",
+                  "value": "true"
+                },
+                {
+                  "key": "employeeName",
+                  "value": ""
+                },
+                {
+                  "key": "officeId",
+                  "value": "4397"
+                },
+                {
+                  "key": "order",
+                  "value": "asc"
+                },
+                {
+                  "key": "pageNumber",
+                  "value": "0"
+                },
+                {
+                  "key": "perPage",
+                  "value": "2000"
+                },
+                {
+                  "key": "sortKey",
+                  "value": "reportPosition"
+                },
+                {
+                  "key": "status",
+                  "value": "1",
+                  "description": "0 = Inactive, 1=Active, 2=Terminated, 3=Resigned, 4=Transferred"
+                },
+                {
+                  "key": "from",
+                  "value": "1769882400000"
+                },
+                {
+                  "key": "to",
+                  "value": "1772301599999"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Leave Balance Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/attendance/leave-balance?employeeName=&officeId=4397&order=asc&pageNumber=0&perPage=2000&sortKey=reportPosition&status=1&from=1767204000000&to=1798739999000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "attendance",
+                "leave-balance"
+              ],
+              "query": [
+                {
+                  "key": "companyId",
+                  "value": "4146",
+                  "disabled": true
+                },
+                {
+                  "key": "employeeName",
+                  "value": ""
+                },
+                {
+                  "key": "officeId",
+                  "value": "4397"
+                },
+                {
+                  "key": "order",
+                  "value": "asc"
+                },
+                {
+                  "key": "pageNumber",
+                  "value": "0"
+                },
+                {
+                  "key": "perPage",
+                  "value": "2000"
+                },
+                {
+                  "key": "sortKey",
+                  "value": "reportPosition"
+                },
+                {
+                  "key": "status",
+                  "value": "1"
+                },
+                {
+                  "key": "from",
+                  "value": "1767204000000"
+                },
+                {
+                  "key": "to",
+                  "value": "1798739999000"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Late Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/attendance/leave-late-absent?companyId=4146&employeeName=&officeId=4397&order=asc&pageNumber=0&perPage=2000&reportType=2&sortKey=reportPosition&status=1&from=1771092000000&to=1771437599999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "attendance",
+                "leave-late-absent"
+              ],
+              "query": [
+                {
+                  "key": "companyId",
+                  "value": "4146"
+                },
+                {
+                  "key": "employeeName",
+                  "value": ""
+                },
+                {
+                  "key": "officeId",
+                  "value": "4397"
+                },
+                {
+                  "key": "order",
+                  "value": "asc"
+                },
+                {
+                  "key": "pageNumber",
+                  "value": "0"
+                },
+                {
+                  "key": "perPage",
+                  "value": "2000"
+                },
+                {
+                  "key": "reportType",
+                  "value": "2"
+                },
+                {
+                  "key": "sortKey",
+                  "value": "reportPosition"
+                },
+                {
+                  "key": "status",
+                  "value": "1"
+                },
+                {
+                  "key": "from",
+                  "value": "1771092000000"
+                },
+                {
+                  "key": "to",
+                  "value": "1771437599999"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mobile Punch Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/mobile-punch?dinnerFilter=-1&employeeName=&lunchFilter=-1&officeId=4397&order=asc&pageNumber=0&perPage=2000&sortKey=reportPosition&status=1&from=1771092000000&to=1771437599999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mobile-punch"
+              ],
+              "query": [
+                {
+                  "key": "companyId",
+                  "value": "4146",
+                  "disabled": true
+                },
+                {
+                  "key": "dinnerFilter",
+                  "value": "-1"
+                },
+                {
+                  "key": "employeeName",
+                  "value": ""
+                },
+                {
+                  "key": "lunchFilter",
+                  "value": "-1"
+                },
+                {
+                  "key": "officeId",
+                  "value": "4397"
+                },
+                {
+                  "key": "order",
+                  "value": "asc"
+                },
+                {
+                  "key": "pageNumber",
+                  "value": "0"
+                },
+                {
+                  "key": "perPage",
+                  "value": "2000"
+                },
+                {
+                  "key": "sortKey",
+                  "value": "reportPosition"
+                },
+                {
+                  "key": "status",
+                  "value": "1",
+                  "description": "0 = Inactive, 1 = Active, 2 = Terminated, 3 = Resigned, 4 = Transferred"
+                },
+                {
+                  "key": "from",
+                  "value": "1771092000000"
+                },
+                {
+                  "key": "to",
+                  "value": "1771437599999"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Monthly Overtime Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/overtime/report?companyId=4146&employeeName=&officeId=4397&order=asc&pageNumber=0&perPage=2000&sortKey=reportPosition&from=1769882400000&to=1772301599999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "overtime",
+                "report"
+              ],
+              "query": [
+                {
+                  "key": "companyId",
+                  "value": "4146"
+                },
+                {
+                  "key": "employeeName",
+                  "value": ""
+                },
+                {
+                  "key": "officeId",
+                  "value": "4397"
+                },
+                {
+                  "key": "order",
+                  "value": "asc"
+                },
+                {
+                  "key": "pageNumber",
+                  "value": "0"
+                },
+                {
+                  "key": "perPage",
+                  "value": "2000"
+                },
+                {
+                  "key": "sortKey",
+                  "value": "reportPosition"
+                },
+                {
+                  "key": "from",
+                  "value": "1769882400000"
+                },
+                {
+                  "key": "to",
+                  "value": "1772301599999"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Daily Overtime Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/overtime/report/?companyId=4146&employeeName=&from=1771092000000&officeId=4397&order=asc&pageNumber=0&perPage=50&sortKey=reportPosition&to=1771437599999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "overtime",
+                "report",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "companyId",
+                  "value": "4146"
+                },
+                {
+                  "key": "employeeName",
+                  "value": ""
+                },
+                {
+                  "key": "from",
+                  "value": "1771092000000"
+                },
+                {
+                  "key": "officeId",
+                  "value": "4397"
+                },
+                {
+                  "key": "order",
+                  "value": "asc"
+                },
+                {
+                  "key": "pageNumber",
+                  "value": "0"
+                },
+                {
+                  "key": "perPage",
+                  "value": "50"
+                },
+                {
+                  "key": "sortKey",
+                  "value": "reportPosition"
+                },
+                {
+                  "key": "to",
+                  "value": "1771437599999"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Workplace",
+      "item": [
+        {
+          "name": "Get All Workplaces",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/workplace",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workplace"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Workplace",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\":\"Inovace HQ\",\n  \"officeId\":4397,\n  \"latValue\":23.742017,\n  \"longValue\":90.395488\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/workplace",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workplace"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Workplace",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\":\"Inovace HQ\",\n  \"status\":1,\n  \"latValue\":23.7612256,\n  \"longValue\":90.420766\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/workplace/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workplace",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "8295"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Workplace",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": -1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/workplace/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workplace",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "8293"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://hrm.tipsoi.pro/inovace-client/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

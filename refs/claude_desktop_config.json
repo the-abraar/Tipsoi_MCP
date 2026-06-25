@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "tipsoi": {
+      "command": "/var/home/abraar_at_inovace_w_fsilverblue/Everything/Projects/Tipsoi_Agentic_AI/tipsoi_mcp/tipsoi-mcp/.venv/bin/python3",
+      "args": ["-m", "tipsoi_mcp.server"],
+      "env": {
+        "PYTHONPATH": "/var/home/abraar_at_inovace_w_fsilverblue/Everything/Projects/Tipsoi_Agentic_AI/tipsoi_mcp/tipsoi-mcp",
+        "TIPSOI_EMAIL": "bugtitan@example.com",
+        "TIPSOI_PASSWORD": "Test@123",
+        "TIPSOI_OFFICE_ID": "4903",
+        "TIPSOI_COMPANY_ID": "4146"
+      }
+    }
+  }
+}
