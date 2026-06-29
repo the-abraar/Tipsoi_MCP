@@ -1,0 +1,4 @@
+# Minimal deps for the standalone Q&A app (gateway.qna) — no MCP needed.
+fastapi>=0.110
+uvicorn[standard]>=0.27
+google-genai>=0.3

@@ -1,0 +1,5 @@
+# Deps for the Tipsoi-flavored Gemini proxy (gateway.gemini_proxy).
+# No google-genai needed server-side — we forward raw HTTP via httpx.
+fastapi>=0.110
+uvicorn[standard]>=0.27
+httpx>=0.27

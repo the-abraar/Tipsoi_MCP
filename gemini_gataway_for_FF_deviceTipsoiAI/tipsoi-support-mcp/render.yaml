@@ -1,0 +1,16 @@
+# Deploy the Tipsoi-flavored Gemini proxy to Render.
+# Push to GitHub, then Render → New → Blueprint → pick the repo.
+# Set the two secret env vars when prompted.
+services:
+  - type: web
+    name: tipsoi-gemini
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: GEMINI_API_KEY   # YOUR real Gemini key — server-side only
+        sync: false
+      - key: QNA_API_KEYS     # comma-separated access keys you hand out
+        sync: false
+      - key: QNA_RPM
+        value: "30"
